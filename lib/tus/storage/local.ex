@@ -37,12 +37,18 @@ defmodule Tus.Storage.Local do
   def append(file, config, body) do
     base_path(config)
     |> Path.join(file.path)
-    |> File.open([:append, :binary, :delayed_write, :raw])
+    |> :file.open([:append, :binary, :raw, :sync])
     |> case do
-      {:ok, filesto} ->
-        IO.binwrite(filesto, body)
-        File.close(filesto)
-        {:ok, file}
+      {:ok, fd} ->
+        case :file.write(fd, body) do
+          :ok ->
+            :file.close(fd)
+            {:ok, file}
+
+          {:error, reason} ->
+            :file.close(fd)
+            {:error, reason}
+        end
 
       {:error, error} ->
         {:error, error}

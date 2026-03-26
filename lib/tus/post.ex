@@ -77,7 +77,7 @@ defmodule Tus.Post do
       |> Kernel.||("#{hard_limit}")
       |> String.to_integer()
 
-    if size < min(hard_limit, soft_limit) do
+    if size <= min(hard_limit, soft_limit) do
       :ok
     else
       :too_large
