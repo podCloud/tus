@@ -68,9 +68,19 @@ defmodule Tus.Patch do
   end
 
   defp get_body(conn) do
+    read_full_body(conn, [])
+  end
+
+  defp read_full_body(conn, acc) do
     case read_body(conn) do
-      {_, binary, conn} -> {:ok, binary, conn}
-      _ -> :no_body
+      {:ok, binary, conn} ->
+        {:ok, IO.iodata_to_binary(Enum.reverse([binary | acc])), conn}
+
+      {:more, binary, conn} ->
+        read_full_body(conn, [binary | acc])
+
+      _ ->
+        :no_body
     end
   end
 
