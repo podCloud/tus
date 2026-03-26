@@ -20,7 +20,7 @@ defmodule Tus.MixProject do
   defp docs do
     [
       main: "Tus",
-      source_url: "https://github.com/jpscaletti/tus",
+      source_url: "https://github.com/podCloud/tus",
       extras: []
     ]
   end
@@ -29,8 +29,8 @@ defmodule Tus.MixProject do
     [
       files: ~w(lib mix.exs README.md LICENSE VERSION),
       licenses: ["BSD 3-Clause License"],
-      maintainers: ["Juan-Pablo Scaletti", "juanpablo@jpscaletti.com"],
-      links: %{github: "https://github.com/jpscaletti/tus"}
+      maintainers: ["Juan-Pablo Scaletti"],
+      links: %{github: "https://github.com/podCloud/tus"}
     ]
   end
 
