@@ -11,15 +11,24 @@ defmodule Tus.Head do
         # by adding the Cache-Control: no-store header to the response.
         |> put_resp_header("cache-control", "no-store"),
 
-        Tus.cache_get(config)
+        Tus.cache_get(config),
+        config
     )
   end
 
-  defp response(conn, nil) do
+  defp response(conn, nil, _config) do
     conn |> resp(:not_found, "")
   end
 
-  defp response(conn, %{} = file) do
+  defp response(conn, %{} = file, config) do
+    # Cache présent ET upload complet ⇒ le dernier PATCH a fini le fichier mais
+    # on_complete_upload a échoué (sinon cache_delete aurait viré l'entrée).
+    # On retente ici avant de répondre — store! côté app est idempotent.
+    if file.offset == file.size do
+      config.on_complete_upload.(file)
+      Tus.cache_delete(file, config)
+    end
+
     # If an upload contains additional metadata, responses to HEAD requests MUST
     # include the `Upload-Metadata` header and its value **as specified by the Client
     # during the creation**.
