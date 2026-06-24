@@ -56,9 +56,22 @@ defmodule Tus.Post do
     |> Enum.map(&split_metadata/1)
   end
 
+  # A metadata pair is `key SP base64(value)`. The TUS spec also allows a key
+  # with no value at all, which clients (e.g. tus-js-client) emit as a bare key
+  # whenever the value is an empty string. Both the missing value and an
+  # undecodable value fall back to "" instead of raising.
   defp split_metadata(kv) do
-    [key, value] = String.split(kv, ~r/\s+/, parts: 2)
-    {key, Base.decode64!(value)}
+    case String.split(kv, ~r/\s+/, parts: 2) do
+      [key, value] -> {key, decode_value(value)}
+      [key] -> {key, ""}
+    end
+  end
+
+  defp decode_value(value) do
+    case Base.decode64(value) do
+      {:ok, decoded} -> decoded
+      :error -> ""
+    end
   end
 
   defp get_size(conn) do
